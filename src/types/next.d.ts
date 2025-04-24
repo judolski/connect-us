@@ -7,7 +7,7 @@ declare module "net" {
     server: HTTPServer & { io: IOServer };
   }
 }
-
+//here
 declare module "next" {
   export interface NextApiRequest {
     user: any;
