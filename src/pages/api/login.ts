@@ -11,10 +11,10 @@ export default async function handler(
 
   const { username, password } = req.body;
 
-  const authUser: any = await authenticateUser(username, password);
+  const authUser = await authenticateUser(username, password);
 
   if (!authUser.success) {
-    return res.status(authUser.statusCode).json(authUser);
+    return res.status(authUser.statusCode).json(authUser as ResponseModel);
   }
 
   const { id, email, phoneNumber, firstName, lastName, role } = authUser.data;

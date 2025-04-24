@@ -7,7 +7,6 @@ export default async function handler(
   res: NextApiResponse<ResponseModel>
 ) {
   await connectToDatabase();
-  const data = JSON.parse(req.headers["x-user"] as string);
 
   try {
     //exclude the login user
