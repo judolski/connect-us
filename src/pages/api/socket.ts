@@ -19,11 +19,17 @@ export default async function handler(
     res.socket.server.io = io;
 
     await connectToDatabase();
+    const authData = JSON.parse(req.headers["x-user"] as string);
+    const { id } = authData.user;
+    console.log(id);
 
     io.on("connection", (socket) => {
       socket.on("message", async (msg) => {
         const saved = await Message.create(msg);
-        io.emit("message", saved);
+        const populatedMsg = await Message.findById(saved._id)
+          .populate({ path: "senderId", select: "-__isDeleted -v" })
+          .populate({ path: "receiverId", select: "-__isDeleted -v" });
+        io.emit("message", populatedMsg);
       });
     });
   }

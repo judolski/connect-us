@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/db";
-import { Message } from "@/models/message";
+import { User } from "@/models/user";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -9,14 +9,14 @@ export default async function handler(
   await connectToDatabase();
   const data = JSON.parse(req.headers["x-user"] as string);
 
-  const { id } = data.user;
   try {
-    const response: ResponseModel[] = await Message.find({
-      $or: [{ senderId: id }, { receiverId: id }],
+    //exclude the login user
+    const response: ResponseModel[] = await User.find({
+      status: "active",
+      isDeleted: false,
     })
       .sort({ createdAt: 1 })
-      .populate({ path: "senderId", select: "-isDeleted -__v -password" })
-      .populate({ path: "receiverId", select: "-isDeleted -__v -password" });
+      .select("-password -__v -isDeleted");
 
     res.status(200).json({
       success: true,
@@ -25,7 +25,6 @@ export default async function handler(
       data: response,
     });
   } catch (e) {
-    console.log(e);
     res.status(500).json({
       success: false,
       statusCode: 500,
