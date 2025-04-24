@@ -27,7 +27,7 @@ export default async function handler(
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Something went wrong, try again later",
+      message: `Something went wrong, try again later ${e}`,
       data: null,
     });
   }
