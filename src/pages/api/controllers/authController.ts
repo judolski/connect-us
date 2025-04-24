@@ -1,9 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import { User } from "@/models/user";
 import bcrypt from "bcryptjs";
-import { generateToken } from "@/utils/auth";
 
 const PUBLIC_KEY = process.env.PUBLIC_KEY;
 
@@ -75,8 +73,6 @@ export const authenticateUser = async (username: string, password: string) => {
       };
     }
 
-    const { firstName, LastName, phoneNumber, email, id, role } = checkUser;
-
     return {
       success: true,
       statusCode: 200,
@@ -108,6 +104,6 @@ export const checkUserExist = async (
     }
     return res.status(200).json({ success: true });
   } catch (err) {
-    return res.status(500).json({ success: undefined });
+    return res.status(500).json({ success: undefined, message: err });
   }
 };

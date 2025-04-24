@@ -7,7 +7,6 @@ export default async function handler(
   res: NextApiResponse<ResponseModel>
 ) {
   await connectToDatabase();
-  const data = JSON.parse(req.headers["x-user"] as string);
 
   try {
     //exclude the login user
@@ -28,7 +27,7 @@ export default async function handler(
     res.status(500).json({
       success: false,
       statusCode: 500,
-      message: "Something went wrong, try again later",
+      message: `Something went wrong, try again later ${e}`,
       data: null,
     });
   }
