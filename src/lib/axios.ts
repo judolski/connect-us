@@ -4,7 +4,7 @@ import { AuthData } from "@/app/login/loginForm";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.Base_Url,
+  baseURL: process.env.NEXT_PUBLIC_Base_Url,
   withCredentials: true,
 });
 
