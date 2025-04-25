@@ -38,9 +38,9 @@ export default function ChatPage() {
     setsenderId(sender.id);
     setReceiverName(receiver.firstName);
 
-    api.get("/api/socket");
+    api.get("/socket");
 
-    api.get("/api/messages").then((res) => {
+    api.get("/messages").then((res) => {
       if (res.data.success) setMessages(res.data.data || []);
       else alert(res.data.message);
     });
