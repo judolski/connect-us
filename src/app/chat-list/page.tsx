@@ -12,7 +12,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     const getChatList = async () => {
-      const res = await api.get("/users");
+      const res = await api.get("/api/users");
 
       const { data, message, success } = res.data;
 
