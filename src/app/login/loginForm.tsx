@@ -26,17 +26,9 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // const res = await api.post("/api/login", { password, username });
+    const res = await api.post("/api/login", { password, username });
 
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
-
-    const data = await res.json();
+    const data = res.data;
     if (data.success) {
       const authData: AuthData = data.data;
       localStorage.setItem("authData", JSON.stringify(authData));
