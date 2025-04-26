@@ -1,6 +1,5 @@
 import { connectToDatabase } from "@/lib/db";
 import { User } from "@/models/user";
-import type { NextApiRequest } from "next";
 import { NextResponse } from "next/server";
 
 export async function GET() {
