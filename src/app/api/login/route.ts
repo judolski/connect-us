@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       {
         success: false,
         statusCode: 500,
-        message: "Internal Server Error",
+        message: `Internal Server Error, ${error}`,
         data: null,
       },
       { status: 500 }
