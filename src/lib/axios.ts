@@ -10,7 +10,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    if (typeof window !== undefined) {
+    if (typeof window !== "undefined") {
       const authData = localStorage.getItem("authData");
       const user: AuthData = JSON.parse(authData as string);
       const token = user ? user?.token : null;
