@@ -1,22 +1,21 @@
-import { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { encryptPassword } from "../../../utils/auth";
-import { NextApiResponse } from "next";
-import { NextApiRequest } from "next/types";
 import { User } from "@/models/user";
 import mongoose from "mongoose";
 import { Role } from "@/models/role";
 
-export const createUser = async (req: NextApiRequest, res: NextApiResponse) => {
+export const createUser = async (req: Request) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    Object.entries(req.body).map(([key, value]) => {
+    const body = await req.json();
+    const { phoneNumber, email, password } = body;
+
+    Object.entries(body).map(([key, value]) => {
       if (typeof value === "string") {
-        req.body[key] = value.trim();
+        body[key] = value.trim();
       }
     });
-
-    const { firstName, LastName, phoneNumber, email, password } = req.body;
 
     const emailOrPhoneExist = await User.findOne({
       $or: [
@@ -30,7 +29,7 @@ export const createUser = async (req: NextApiRequest, res: NextApiResponse) => {
         emailOrPhoneExist.email === email
           ? emailOrPhoneExist.email
           : emailOrPhoneExist.phoneNumber;
-      return res.status(409).json({
+      return NextResponse.json({
         success: false,
         statusCode: 409,
         data: null,
@@ -40,7 +39,7 @@ export const createUser = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const passwordHarsh = await encryptPassword(password);
     if (!passwordHarsh) {
-      return res.status(400).json({
+      return NextResponse.json({
         success: false,
         statusCode: 400,
         message: "Unable to complete your request",
@@ -59,7 +58,7 @@ export const createUser = async (req: NextApiRequest, res: NextApiResponse) => {
     await response.save({ session });
 
     if (!response) {
-      return res.status(400).json({
+      return NextResponse.json({
         success: false,
         statusCode: 400,
         message: "Unable to complete your request",
@@ -70,13 +69,13 @@ export const createUser = async (req: NextApiRequest, res: NextApiResponse) => {
     await session.commitTransaction();
     session.endSession();
 
-    return res.status(200).json({
+    return NextResponse.json({
       success: true,
       statusCode: 200,
       data: response,
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ success: false, message: err });
+    return NextResponse.json({ success: false, message: err });
   }
 };

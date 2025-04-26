@@ -20,5 +20,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/messages/:path*", "/api/socket/:path*", "/api/users/:path*"], // Add routes you want to protect
+  matcher: ["/api/messages/:path*", "/api/users/:path*"], // Add routes you want to protect
 };
