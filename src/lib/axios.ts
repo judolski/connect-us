@@ -10,11 +10,13 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const user: AuthData = JSON.parse(localStorage.getItem("authData")!);
-    // Example: attach token
-    const token = typeof window !== "undefined" ? user?.token : null;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== undefined) {
+      const authData = localStorage.getItem("authData");
+      const user: AuthData = JSON.parse(authData as string);
+      const token = user ? user?.token : null;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
