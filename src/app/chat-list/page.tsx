@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 import ChatList from "./myChartList";
 import api from "@/lib/axios";
 import { AuthData } from "../login/loginForm";
+import { useRouter } from "next/navigation";
 
 const ChatPage = () => {
   const [chatLists, setChatLists] = useState([]);
   const [currentUserId, setCurrentUserId] = useState("");
+
+  const router = useRouter();
 
   useEffect(() => {
     const getChatList = async () => {
@@ -24,6 +27,10 @@ const ChatPage = () => {
     };
     getChatList();
     const user: AuthData = JSON.parse(localStorage.getItem("authData")!);
+    if (!user) {
+      router.push("/login");
+      return;
+    }
     setCurrentUserId(user.id);
   }, []);
 
