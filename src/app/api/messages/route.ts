@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/db";
 import { Message } from "@/models/message";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
 import { data } from "react-router-dom";
@@ -15,9 +16,15 @@ const pusher = new Pusher({
 
 export async function GET(req: Request) {
   await connectToDatabase();
-  const data = await JSON.parse(req.headers.get("x-user") as string);
+  // const data = await JSON.parse(req.headers.get("x-user") as string);
+  const cookieStore = await cookies();
 
-  const { id } = data.user;
+  const userCookie = cookieStore.get("user-info"); // the cookie you set in middleware
+  if (!userCookie) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const userData = JSON.parse(userCookie.value);
+  const { id } = userData.user;
   try {
     const response: ResponseModel[] = await Message.find({
       $or: [{ senderId: id }, { receiverId: id }],
