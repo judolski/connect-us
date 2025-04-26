@@ -7,6 +7,7 @@ export async function GET() {
 
   try {
     //exclude the login user
+
     const response: ResponseModel[] = await User.find({
       status: "active",
       isDeleted: false,
