@@ -10,8 +10,6 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      alert(process.env.NEXT_PUBLIC_Base_Url);
-
       const authData = localStorage.getItem("authData");
       const user: AuthData = JSON.parse(authData as string);
       const token = user ? user?.token : null;
@@ -19,6 +17,8 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    alert(process.env.NEXT_PUBLIC_Base_Url);
+
     return config;
   },
   (error) => Promise.reject(error)

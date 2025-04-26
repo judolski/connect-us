@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
     res.cookies.set("user-info", JSON.stringify(response.data), {
       httpOnly: true,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
 
