@@ -7,15 +7,15 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_Base_Url,
   withCredentials: true,
 });
-alert(process.env.NEXT_PUBLIC_Base_Url);
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
+      alert(process.env.NEXT_PUBLIC_Base_Url);
+
       const authData = localStorage.getItem("authData");
       const user: AuthData = JSON.parse(authData as string);
       const token = user ? user?.token : null;
       if (token) {
-        alert("hey");
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
