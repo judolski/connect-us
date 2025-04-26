@@ -2,13 +2,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 import { User } from "@/models/user";
 import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
 
 const PUBLIC_KEY = process.env.PUBLIC_KEY;
 
-export const isAuthenticated = (req: NextApiRequest, res: NextApiResponse) => {
-  const token = req.headers?.authorization?.split(" ")[1];
+export const isAuthenticated = (req: Response) => {
+  const token = req.headers?.get("authorization")?.split(" ")[1];
   if (!token) {
-    return res.status(403).send({
+    return NextResponse.json({
       success: false,
       statusCode: 403,
       message: "Unauthorized, no access token provided!",
@@ -20,11 +21,11 @@ export const isAuthenticated = (req: NextApiRequest, res: NextApiResponse) => {
       throw new Error("Invalid token");
     }
     const decodedUser = jwt.verify(token, PUBLIC_KEY!); // Now safely call jwt.verify
-    req.user = decodedUser; // Attach the user data to the request
+    (req as any).user = decodedUser; // Attach the user data to the request
     return true; // Return true if authentication succeeds
   } catch (error) {
     console.log(error);
-    return res.status(498).json({
+    return NextResponse.json({
       success: false,
       statusCode: 498,
       message: "Invalid or expired token! Login again.",
@@ -90,20 +91,17 @@ export const authenticateUser = async (username: string, password: string) => {
   }
 };
 
-export const checkUserExist = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  const { username } = req.body;
+export const checkUserExist = async (req: Request) => {
+  const { username } = await req.json();
   try {
     const checkUser = await User.findOne({
       $or: [{ phone: username }, { email: username }],
     });
     if (!checkUser) {
-      return res.status(404).json({ success: false });
+      return NextResponse.json({ success: false });
     }
-    return res.status(200).json({ success: true });
+    return NextResponse.json({ success: true });
   } catch (err) {
-    return res.status(500).json({ success: undefined, message: err });
+    return NextResponse.json({ success: undefined, message: err });
   }
 };

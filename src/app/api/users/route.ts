@@ -1,11 +1,9 @@
 import { connectToDatabase } from "@/lib/db";
 import { User } from "@/models/user";
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest } from "next";
+import { NextResponse } from "next/server";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<ResponseModel>
-) {
+export async function GET() {
   await connectToDatabase();
 
   try {
@@ -17,14 +15,14 @@ export default async function handler(
       .sort({ createdAt: 1 })
       .select("-password -__v -isDeleted");
 
-    res.status(200).json({
+    return NextResponse.json({
       success: true,
       statusCode: 200,
       message: "Message fetched successfully",
       data: response,
     });
   } catch (e) {
-    res.status(500).json({
+    return NextResponse.json({
       success: false,
       statusCode: 500,
       message: `Something went wrong, try again later ${e}`,

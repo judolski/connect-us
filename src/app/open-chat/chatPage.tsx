@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import socket from "@/utils/socket";
+import { useEffect, useRef, useState } from "react";
 import api from "@/lib/axios";
 import { AuthData } from "../login/loginForm";
 import { useRouter } from "next/navigation";
+import Pusher from "pusher-js";
 
 type Message = {
   _id?: string;
@@ -15,6 +15,7 @@ type Message = {
 };
 
 export default function ChatPage() {
+  const bottomRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setText] = useState("");
   const [receiverId, setReceiverId] = useState<string | null>(null);
@@ -22,6 +23,10 @@ export default function ChatPage() {
   const [receiverName, setReceiverName] = useState<string>("");
 
   const router = useRouter();
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   useEffect(() => {
     const sender: AuthData = JSON.parse(localStorage.getItem("authData")!);
@@ -37,32 +42,45 @@ export default function ChatPage() {
     setReceiverId(receiver.id);
     setsenderId(sender.id);
     setReceiverName(receiver.firstName);
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+    });
 
-    api.get("/api/socket");
+    const channel = pusher.subscribe("my-channel");
+    channel.bind("my-event", (data: Message) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
 
     api.get("/api/messages").then((res) => {
-      if (res.data.success) setMessages(res.data.data || []);
-      else alert(res.data.message);
+      if (res.data.success) {
+        setMessages(res.data.data || []);
+      } else alert(res.data.message);
     });
 
-    socket.on("message", (msg: Message) => {
-      setMessages((prev) => [...prev, msg]);
-    });
-
+    // Cleanup
     return () => {
-      socket.off("message");
-      socket.disconnect();
+      pusher.unsubscribe("my-channel");
     };
   }, []);
 
-  const sendMessage = () => {
-    if (message.trim()) {
-      socket.emit("message", {
-        message,
+  const sendMessage = async () => {
+    const response = await api.post(
+      "/api/messages",
+      JSON.stringify({
+        channel: "my-channel",
+        event: "my-event",
         receiverId,
         senderId,
-      });
+        message,
+      })
+    );
+
+    const data = await response.data;
+    if (data.success) {
       setText("");
+      console.log("Message sent!");
+    } else {
+      console.log("Error sending message");
     }
   };
 
@@ -107,6 +125,7 @@ export default function ChatPage() {
                 </div>
               );
             })}
+            <div ref={bottomRef} />
           </div>
 
           <div className="flex items-center p-2 border-t border-gray-200">
