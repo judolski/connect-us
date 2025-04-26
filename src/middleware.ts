@@ -13,17 +13,19 @@ export async function middleware(request: NextRequest) {
 
   if (response?.success) {
     const res = NextResponse.next();
-
     res.cookies.set("user-info", JSON.stringify(response.data), {
       httpOnly: true,
       path: "/",
-      // secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
 
     return res;
   } else {
-    return NextResponse.json(response);
+    return NextResponse.json({
+      status: 500,
+      message: `An error occur${response}`,
+    });
   }
 }
 

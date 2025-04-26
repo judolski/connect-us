@@ -17,8 +17,6 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    alert(process.env.NEXT_PUBLIC_Base_Url);
-
     return config;
   },
   (error) => Promise.reject(error)
