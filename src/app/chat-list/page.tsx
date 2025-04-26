@@ -15,9 +15,16 @@ const ChatPage = () => {
 
   useEffect(() => {
     const getChatList = async () => {
-      const res = await api.get("/api/users");
+      // const res = await api.get("/api/users");
 
-      const { data, message, success } = res.data;
+      const res = await fetch("/api/users", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const { data, message, success } = await res.json();
 
       if (success) {
         setChatLists(data);
