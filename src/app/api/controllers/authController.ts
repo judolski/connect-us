@@ -20,9 +20,9 @@ export const isAuthenticated = (req: Response) => {
     if (typeof token !== "string" || token.trim() === "") {
       throw new Error("Invalid token");
     }
-    const decodedUser = jwt.verify(token, PUBLIC_KEY!); // Now safely call jwt.verify
-    (req as any).user = decodedUser; // Attach the user data to the request
-    return true; // Return true if authentication succeeds
+    const decodedUser = jwt.verify(token, PUBLIC_KEY!);
+    (req as any).user = decodedUser;
+    return true;
   } catch (error) {
     console.log(error);
     return NextResponse.json({
