@@ -3,7 +3,6 @@ import { Message } from "@/models/message";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
-import { data } from "react-router-dom";
 
 // Initialize Pusher with your credentials
 const pusher = new Pusher({

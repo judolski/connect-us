@@ -8,10 +8,7 @@
 import mongoose from "mongoose";
 
 export async function connectToDatabase() {
-  // const uri = process.env.MONGODB_URI;
-  const uri =
-    "mongodb+srv://judolski:QgB96rh8ZKX4ygQU@connectus.e2cnhrg.mongodb.net/?retryWrites=true&w=majority&appName=ConnectUs'";
-
+  const uri = process.env.MONGODB_URI;
   if (!uri) {
     throw new Error("MONGODB_URI environment variable is not defined!");
   }
