@@ -27,7 +27,7 @@ export const verifyToken = async (token: string) => {
   if (!token || !token.startsWith("Bearer ")) return null;
 
   const formattedToken = token.split(" ")[1];
-  const secret = new TextEncoder().encode(process.env.PRIVATE_KEY!);
+  const secret = new TextEncoder().encode(PRIVATE_KEY);
 
   try {
     const { payload } = await jwtVerify(formattedToken, secret, {
