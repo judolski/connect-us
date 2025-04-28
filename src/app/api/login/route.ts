@@ -2,6 +2,9 @@ import { connectToDatabase } from "@/lib/db";
 import { authenticateUser } from "../controllers/authController";
 import { generateToken } from "@/utils/auth";
 import { NextResponse } from "next/server";
+import { ResponseBody } from "@/utils/apiResponse";
+import { statusCodes } from "@/constants/error";
+import { AuthData } from "@/app/login/loginForm";
 
 export async function POST(req: Request) {
   try {
@@ -15,36 +18,31 @@ export async function POST(req: Request) {
       return NextResponse.json(authUser, { status: authUser.statusCode });
     }
 
-    const { id, email, phoneNumber, firstName, lastName, role } = authUser.data;
+    const { id, email, phoneNumber, firstName, lastName, role } =
+      authUser.data as AuthData;
     const token = generateToken(authUser.data);
 
     if (!token) {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "An error occurred while logging in",
-          data: null,
-        },
-        { status: 400 }
-      );
+      return NextResponse.json(ResponseBody(statusCodes.INTERNAL_SERVER_ERROR));
     }
-
-    return NextResponse.json({
-      success: true,
-      statusCode: 200,
-      message: "Success",
-      data: { id, email, phoneNumber, firstName, lastName, role, token },
-    });
+    return NextResponse.json(
+      ResponseBody(statusCodes.OK, {
+        id,
+        email,
+        phoneNumber,
+        firstName,
+        lastName,
+        role,
+        token,
+      })
+    );
   } catch (error) {
     return NextResponse.json(
-      {
-        success: false,
-        statusCode: 500,
-        message: `Internal Server Error, ${error}`,
-        data: null,
-      },
-      { status: 500 }
+      ResponseBody(
+        statusCodes.INTERNAL_SERVER_ERROR,
+        null,
+        `Internal Server Error, ${error}`
+      )
     );
   }
 }

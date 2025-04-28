@@ -1,5 +1,7 @@
+import { statusCodes } from "@/constants/error";
 import { connectToDatabase } from "@/lib/db";
 import { Message } from "@/models/message";
+import { ResponseBody } from "@/utils/apiResponse";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
@@ -20,7 +22,7 @@ export async function GET(req: Request) {
 
   const userCookie = cookieStore.get("user-info"); // the cookie you set in middleware
   if (!userCookie) {
-    return new Response("Unauthorized", { status: 401 });
+    return NextResponse.json(ResponseBody(statusCodes.UNAUTHORIZED));
   }
   const userData = JSON.parse(userCookie.value);
   const { id } = userData.user;
@@ -32,20 +34,10 @@ export async function GET(req: Request) {
       .populate({ path: "senderId", select: "-isDeleted -__v -password" })
       .populate({ path: "receiverId", select: "-isDeleted -__v -password" });
 
-    return NextResponse.json({
-      success: true,
-      statusCode: 200,
-      message: "Message fetched successfully",
-      data: response,
-    });
+    return NextResponse.json(ResponseBody(statusCodes.OK, response));
   } catch (e) {
     console.log(e);
-    return NextResponse.json({
-      success: false,
-      statusCode: 500,
-      message: "Something went wrong, try again later",
-      data: null,
-    });
+    return NextResponse.json(ResponseBody(statusCodes.INTERNAL_SERVER_ERROR));
   }
 }
 
@@ -53,7 +45,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { channel, event } = body;
-    console.log(body);
 
     const saved = await Message.create(body);
     const populatedMsg = await Message.findById(saved._id)
@@ -62,7 +53,7 @@ export async function POST(req: Request) {
 
     await pusher.trigger(channel, event, populatedMsg);
 
-    return NextResponse.json({ success: true, data: populatedMsg });
+    return NextResponse.json(ResponseBody(statusCodes.OK, populatedMsg));
   } catch (error: any) {
     console.error("Error triggering Pusher event:", error);
     return NextResponse.json({ success: false, error: error.message });
