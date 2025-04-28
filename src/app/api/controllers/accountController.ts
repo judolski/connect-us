@@ -3,6 +3,8 @@ import { encryptPassword } from "../../../utils/auth";
 import { User } from "@/models/user";
 import mongoose from "mongoose";
 import { Role } from "@/models/role";
+import { ResponseBody } from "@/utils/apiResponse";
+import { statusCodes } from "@/constants/error";
 
 export const createUser = async (req: Request) => {
   const session = await mongoose.startSession();
@@ -29,22 +31,25 @@ export const createUser = async (req: Request) => {
         emailOrPhoneExist.email === email
           ? emailOrPhoneExist.email
           : emailOrPhoneExist.phoneNumber;
-      return NextResponse.json({
-        success: false,
-        statusCode: 409,
-        data: null,
-        message: `${existingValue} already exist in the system`,
-      });
+
+      return NextResponse.json(
+        ResponseBody(
+          statusCodes.CONFLICT,
+          null,
+          `${existingValue} already exist in the system`
+        )
+      );
     }
 
     const passwordHarsh = await encryptPassword(password);
     if (!passwordHarsh) {
-      return NextResponse.json({
-        success: false,
-        statusCode: 400,
-        message: "Unable to complete your request",
-        data: null,
-      });
+      return NextResponse.json(
+        ResponseBody(
+          statusCodes.INTERNAL_SERVER_ERROR,
+          null,
+          `Unable to complete your request`
+        )
+      );
     }
 
     const roles = await Role.findOne({ name: "User" });
@@ -58,24 +63,26 @@ export const createUser = async (req: Request) => {
     await response.save({ session });
 
     if (!response) {
-      return NextResponse.json({
-        success: false,
-        statusCode: 400,
-        message: "Unable to complete your request",
-        data: null,
-      });
+      return NextResponse.json(
+        ResponseBody(
+          statusCodes.INTERNAL_SERVER_ERROR,
+          null,
+          `Unable to complete your request`
+        )
+      );
     }
 
     await session.commitTransaction();
     session.endSession();
-
-    return NextResponse.json({
-      success: true,
-      statusCode: 200,
-      data: response,
-    });
+    return NextResponse.json(ResponseBody(statusCodes.OK, response));
   } catch (err) {
     console.log(err);
-    return NextResponse.json({ success: false, message: err });
+    return NextResponse.json(
+      ResponseBody(
+        statusCodes.INTERNAL_SERVER_ERROR,
+        null,
+        `Unable to complete your request.\n ${err}`
+      )
+    );
   }
 };

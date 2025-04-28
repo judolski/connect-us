@@ -11,6 +11,7 @@ export type AuthData = {
   email: string;
   phoneNumber: string;
   token: string;
+  role: string;
 };
 
 export default function LoginForm() {

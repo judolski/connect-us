@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import { User } from "@/models/user";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import { ResponseBody } from "@/utils/apiResponse";
+import { statusCodes } from "@/constants/error";
 
 const PUBLIC_KEY = process.env.PUBLIC_KEY;
 
@@ -46,62 +48,26 @@ export const authenticateUser = async (username: string, password: string) => {
       .exec();
 
     if (!checkUser) {
-      return {
-        success: false,
-        statusCode: 401,
-        message: "Invalid user",
-        data: null,
-      };
+      return ResponseBody(statusCodes.UNAUTHORIZED, null, "Invalid user");
     }
 
     if (password === null || password === "") {
-      return {
-        success: false,
-        statusCode: 401,
-        message: "Password is required",
-        data: null,
-      };
+      return ResponseBody(
+        statusCodes.UNAUTHORIZED,
+        null,
+        "Password is required"
+      );
     }
 
     const checkPassword = await bcrypt.compare(password, checkUser.password);
 
     if (!checkPassword) {
-      return {
-        success: false,
-        statusCode: 401,
-        data: null,
-        message: "Incorrect password",
-      };
+      return ResponseBody(statusCodes.UNAUTHORIZED, null, "Incorrect password");
     }
-
-    return {
-      success: true,
-      statusCode: 200,
-      message: "Success",
-      data: checkUser,
-    };
+    return ResponseBody(statusCodes.OK, checkUser);
   } catch (error) {
     console.log(error);
-    return {
-      success: false,
-      statusCode: 500,
-      message: error instanceof Error ? error.message : error,
-      data: null,
-    };
-  }
-};
-
-export const checkUserExist = async (req: Request) => {
-  const { username } = await req.json();
-  try {
-    const checkUser = await User.findOne({
-      $or: [{ phone: username }, { email: username }],
-    });
-    if (!checkUser) {
-      return NextResponse.json({ success: false });
-    }
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ success: undefined, message: err });
+    const message = error instanceof Error ? error.message : error;
+    return ResponseBody(statusCodes.OK, null, message);
   }
 };
