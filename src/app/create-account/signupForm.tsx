@@ -38,7 +38,7 @@ export default function UserForm() {
     setSuccess(false);
 
     try {
-      const res = await fetch("/api/newUser", {
+      const res = await fetch("/api/new-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

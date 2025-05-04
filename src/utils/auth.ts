@@ -22,7 +22,14 @@ export const generateToken = (user: any) => {
 };
 
 export const verifyToken = async (token: string) => {
-  if (!token || !token.startsWith("Bearer ")) return null;
+  if (!token || !token.startsWith("Bearer ")) {
+    return {
+      success: false,
+      statusCode: 401,
+      message: "No authentication token provided",
+      data: null,
+    };
+  }
 
   const formattedToken = token.split(" ")[1];
   const secret = new TextEncoder().encode(PRIVATE_KEY);

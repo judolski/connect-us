@@ -2,25 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import api from "@/lib/axios";
-import { AuthData } from "../login/loginForm";
 import { useRouter } from "next/navigation";
 import Pusher from "pusher-js";
-
-type Message = {
-  _id?: string;
-  receiverId?: AuthData;
-  senderId?: AuthData;
-  message: string;
-  timestamp?: string;
-};
+import { AuthData } from "@/types/authData";
+import { Message } from "@/types/message";
+import { useChatStore } from "@/stores/useChatStore";
 
 export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // const [messages, setMessages] = useState<Message[]>([]);
   const [message, setText] = useState("");
   const [receiverId, setReceiverId] = useState<string | null>(null);
   const [senderId, setsenderId] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string>("");
+
+  const { messages, setMessages } = useChatStore();
 
   const router = useRouter();
 
@@ -48,7 +44,8 @@ export default function ChatPage() {
 
     const channel = pusher.subscribe("my-channel");
     channel.bind("my-event", (data: Message) => {
-      setMessages((prevMessages) => [...prevMessages, data]);
+      console.log(messages);
+      setMessages([...messages, data]);
     });
 
     api.get("/api/messages").then((res) => {
@@ -72,11 +69,13 @@ export default function ChatPage() {
         receiverId,
         senderId,
         message,
+        isNew: messages.length < 1 ? true : false,
       })
     );
 
     const data = await response.data;
     if (data.success) {
+      setMessages([...messages, data.data]);
       setText("");
       console.log("Message sent!");
     } else {

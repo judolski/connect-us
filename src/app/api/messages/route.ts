@@ -1,5 +1,6 @@
 import { statusCodes } from "@/constants/error";
 import { connectToDatabase } from "@/lib/db";
+import { ChatList } from "@/models/chatList";
 import { Message } from "@/models/message";
 import { ResponseBody } from "@/utils/apiResponse";
 import { cookies } from "next/headers";
@@ -44,7 +45,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { channel, event } = body;
+    const { channel, event, isNew, senderId, receiverId } = body;
+
+    if (isNew) {
+      const checkIfExist = await ChatList.findOne({
+        $and: [{ senderId }, { receiverId }],
+      });
+
+      console.log(checkIfExist);
+      if (!checkIfExist) {
+        await ChatList.create({ senderId, receiverId });
+      }
+    }
 
     const saved = await Message.create(body);
     const populatedMsg = await Message.findById(saved._id)
