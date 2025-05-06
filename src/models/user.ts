@@ -5,8 +5,8 @@ const UserSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    email: { type: String, default: null, required: false },
+    phoneNumber: { type: String, unique: true, required: true },
+    email: { type: String, default: null, unique: true, required: false },
     password: { type: String, default: null, required: false },
     roleId: {
       type: Schema.Types.ObjectId,
@@ -26,10 +26,9 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-UserSchema.virtual("role", {
-  ref: "Role", // Reference the User model
-  localField: "roleId", // Field in the current schema
-  foreignField: "_id", // Field in the referenced schema
-  justOne: true, // Retrieve a single object
-});
+// UserSchema.index({ email: 1 });
+// UserSchema.index({ phoneNumber: 1 });
+UserSchema.index({ roleId: 1 });
+UserSchema.index({ status: 1, isDeleted: 1 });
+
 export const User = mongoose.models.User || mongoose.model("User", UserSchema);

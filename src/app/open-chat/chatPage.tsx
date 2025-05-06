@@ -16,7 +16,7 @@ export default function ChatPage() {
   const [senderId, setsenderId] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string>("");
 
-  const { messages, setMessages } = useChatStore();
+  const { messages, setMessages, addMessage } = useChatStore();
 
   const router = useRouter();
 
@@ -44,8 +44,7 @@ export default function ChatPage() {
 
     const channel = pusher.subscribe("my-channel");
     channel.bind("my-event", (data: Message) => {
-      console.log(messages);
-      setMessages([...messages, data]);
+      addMessage(data);
     });
 
     api.get("/api/messages").then((res) => {
@@ -69,7 +68,6 @@ export default function ChatPage() {
         receiverId,
         senderId,
         message,
-        isNew: messages.length < 1 ? true : false,
       })
     );
 

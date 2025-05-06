@@ -3,21 +3,22 @@ import "./user";
 
 const ChatListSchema = new mongoose.Schema(
   {
-    senderId: {
+    userA: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userB: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    lastMessageId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Message",
       required: true,
-      default: null,
     },
-    receiverId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      default: null,
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+ChatListSchema.index({ userA: 1, userB: 1 }, { unique: true }); // Prevent duplicates
 
 ChatListSchema.pre("find", function (next) {
   this.select("-__v -isDeleted -password");

@@ -2,14 +2,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ChatList from "./myChartList";
+import ChatList, { IChatList } from "./myChartList";
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { AuthData } from "@/types/authData";
 
 const ChatPage = () => {
-  const [chatLists, setChatLists] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState("");
+  const [chatLists, setChatLists] = useState<IChatList[]>([]);
 
   const router = useRouter();
 
@@ -20,7 +19,6 @@ const ChatPage = () => {
       router.push("/login");
       return;
     }
-    setCurrentUserId(user.id);
   }, []);
 
   const getChatList = async () => {
@@ -35,8 +33,8 @@ const ChatPage = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-100 flex  justify-center p-4">
-      <ChatList users={chatLists} currentUserId={currentUserId} />
+    <div className="min-h-screen bg-gray-100 flex justify-center p-4">
+      <ChatList chatLists={chatLists} />
     </div>
   );
 };

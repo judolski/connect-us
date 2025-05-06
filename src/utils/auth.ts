@@ -38,7 +38,6 @@ export const verifyToken = async (token: string) => {
     const { payload } = await jwtVerify(formattedToken, secret, {
       algorithms: ["HS256"],
     });
-
     return {
       success: true,
       statusCode: 200,
