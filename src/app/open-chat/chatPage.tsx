@@ -2,25 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import api from "@/lib/axios";
-import { AuthData } from "../login/loginForm";
 import { useRouter } from "next/navigation";
 import Pusher from "pusher-js";
-
-type Message = {
-  _id?: string;
-  receiverId?: AuthData;
-  senderId?: AuthData;
-  message: string;
-  timestamp?: string;
-};
+import { AuthData } from "@/types/authData";
+import { Message } from "@/types/message";
+import { useChatStore } from "@/stores/useChatStore";
 
 export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // const [messages, setMessages] = useState<Message[]>([]);
   const [message, setText] = useState("");
   const [receiverId, setReceiverId] = useState<string | null>(null);
   const [senderId, setsenderId] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string>("");
+
+  const { messages, setMessages, addMessage } = useChatStore();
 
   const router = useRouter();
 
@@ -48,7 +44,7 @@ export default function ChatPage() {
 
     const channel = pusher.subscribe("my-channel");
     channel.bind("my-event", (data: Message) => {
-      setMessages((prevMessages) => [...prevMessages, data]);
+      addMessage(data);
     });
 
     api.get("/api/messages").then((res) => {
@@ -77,6 +73,7 @@ export default function ChatPage() {
 
     const data = await response.data;
     if (data.success) {
+      setMessages([...messages, data.data]);
       setText("");
       console.log("Message sent!");
     } else {
@@ -102,7 +99,7 @@ export default function ChatPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {messages?.map(({ senderId, message }, idx) => {
+            {messages?.map(({ senderId, message, createdAt }, idx) => {
               const user: AuthData = JSON.parse(
                 localStorage.getItem("authData")!
               );
@@ -114,13 +111,16 @@ export default function ChatPage() {
                   className={`flex items-end ${
                     isMine ? "justify-end" : "justify-start"
                   }`}>
-                  <div
-                    className={`max-w-xs px-4 py-2 rounded-lg text-sm break-words ${
-                      isMine
-                        ? "bg-blue-500 text-white rounded-br-none"
-                        : "bg-gray-200 text-gray-800 rounded-bl-none"
-                    }`}>
-                    {message}
+                  <div className="flex flex-col justify-start gap-[1px]">
+                    <div
+                      className={`max-w-xs px-4 py-2 rounded-lg text-sm break-words ${
+                        isMine
+                          ? "bg-blue-500 text-white rounded-br-none"
+                          : "bg-gray-200 text-gray-800 rounded-bl-none"
+                      }`}>
+                      {message}
+                    </div>
+                    <span className="text-[11px]">{createdAt}</span>
                   </div>
                 </div>
               );

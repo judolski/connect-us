@@ -1,7 +1,10 @@
 import { statusCodes } from "@/constants/error";
 import { connectToDatabase } from "@/lib/db";
+import { ChatList } from "@/models/chatList";
 import { Message } from "@/models/message";
 import { ResponseBody } from "@/utils/apiResponse";
+import { extractUserInfoFromToken } from "@/utils/auth";
+import mongoose from "mongoose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
@@ -17,16 +20,10 @@ const pusher = new Pusher({
 
 export async function GET(req: Request) {
   await connectToDatabase();
-  // const data = await JSON.parse(req.headers.get("x-user") as string);
-  const cookieStore = await cookies();
 
-  const userCookie = cookieStore.get("user-info"); // the cookie you set in middleware
-  if (!userCookie) {
-    return NextResponse.json(ResponseBody(statusCodes.UNAUTHORIZED));
-  }
-  const userData = JSON.parse(userCookie.value);
-  const { id } = userData.user;
   try {
+    const userInfo = await extractUserInfoFromToken(req);
+    const { id } = userInfo;
     const response: ResponseModel[] = await Message.find({
       $or: [{ senderId: id }, { receiverId: id }],
     })
@@ -44,14 +41,39 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { channel, event } = body;
+
+    Object.entries(body).forEach(([key, value]) => {
+      if (typeof value === "string") {
+        body[key] = value.trim();
+      }
+    });
+
+    const { channel, event, senderId, receiverId } = body;
+
+    console.log(senderId);
+    console.log(receiverId);
 
     const saved = await Message.create(body);
     const populatedMsg = await Message.findById(saved._id)
-      .populate({ path: "senderId", select: "-__isDeleted -v" })
-      .populate({ path: "receiverId", select: "-__isDeleted -v" });
+      .populate({ path: "senderId", select: "-isDeleted -__v" })
+      .populate({ path: "receiverId", select: "-__isDeleted -__v" });
 
     await pusher.trigger(channel, event, populatedMsg);
+
+    //Prevents duplicate conversations between same users.
+    const [userA, userB] =
+      senderId.toString() < receiverId.toString()
+        ? [senderId, receiverId]
+        : [receiverId, senderId];
+
+    await ChatList.findOneAndUpdate(
+      {
+        userA: new mongoose.Types.ObjectId(userA),
+        userB: new mongoose.Types.ObjectId(userB),
+      },
+      { $set: { userA, userB, lastMessage: saved._id } },
+      { upsert: true, new: true, strict: false }
+    );
 
     return NextResponse.json(ResponseBody(statusCodes.OK, populatedMsg));
   } catch (error: any) {

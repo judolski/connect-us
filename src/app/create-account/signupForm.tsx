@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/lib/axios";
 import { useEffect, useState } from "react";
 
 export type UserFormData = {
@@ -38,13 +39,11 @@ export default function UserForm() {
     setSuccess(false);
 
     try {
-      const res = await fetch("/api/newUser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const res = await api.post("/api/new-user", formData);
 
-      if (res.ok) {
+      const { success, data, message } = res.data;
+
+      if (success) {
         setSuccess(true);
         setFormData({
           firstName: "",

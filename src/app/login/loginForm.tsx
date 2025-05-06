@@ -3,16 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
-
-export type AuthData = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  token: string;
-  role: string;
-};
+import { AuthData } from "@/types/authData";
 
 export default function LoginForm() {
   const router = useRouter();

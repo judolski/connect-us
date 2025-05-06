@@ -1,23 +1,26 @@
+import { connectToDatabase } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { encryptPassword } from "../../../utils/auth";
-import { User } from "@/models/user";
 import mongoose from "mongoose";
+import { User } from "@/models/user";
+import { statusCodes } from "@/constants/error";
 import { Role } from "@/models/role";
 import { ResponseBody } from "@/utils/apiResponse";
-import { statusCodes } from "@/constants/error";
+import { encryptPassword } from "@/utils/auth";
 
-export const createUser = async (req: Request) => {
+export async function POST(req: Request) {
+  await connectToDatabase();
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     const body = await req.json();
-    const { phoneNumber, email, password } = body;
-
-    Object.entries(body).map(([key, value]) => {
+    Object.entries(body).forEach(([key, value]) => {
       if (typeof value === "string") {
         body[key] = value.trim();
       }
     });
+
+    const { phoneNumber, email, password } = body;
 
     const emailOrPhoneExist = await User.findOne({
       $or: [
@@ -54,8 +57,18 @@ export const createUser = async (req: Request) => {
 
     const roles = await Role.findOne({ name: "User" });
 
+    if (!roles) {
+      return NextResponse.json(
+        ResponseBody(
+          statusCodes.BAD_REQUEST,
+          null,
+          "Default role 'User' not found"
+        )
+      );
+    }
+
     const response = new User({
-      ...req.body,
+      ...body,
       password: passwordHarsh,
       roleId: roles._id,
     });
@@ -73,10 +86,8 @@ export const createUser = async (req: Request) => {
     }
 
     await session.commitTransaction();
-    session.endSession();
     return NextResponse.json(ResponseBody(statusCodes.OK, response));
   } catch (err) {
-    console.log(err);
     return NextResponse.json(
       ResponseBody(
         statusCodes.INTERNAL_SERVER_ERROR,
@@ -84,5 +95,7 @@ export const createUser = async (req: Request) => {
         `Unable to complete your request.\n ${err}`
       )
     );
+  } finally {
+    session.endSession();
   }
-};
+}

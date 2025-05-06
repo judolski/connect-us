@@ -4,7 +4,7 @@ import { generateToken } from "@/utils/auth";
 import { NextResponse } from "next/server";
 import { ResponseBody } from "@/utils/apiResponse";
 import { statusCodes } from "@/constants/error";
-import { AuthData } from "@/app/login/loginForm";
+import { AuthData } from "@/types/authData";
 
 export async function POST(req: Request) {
   try {

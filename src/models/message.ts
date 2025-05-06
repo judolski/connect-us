@@ -7,15 +7,14 @@ const MessageSchema = new mongoose.Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      default: null,
     },
     receiverId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      default: null,
     },
     message: { type: String, required: true },
+    isRead: { type: Boolean, default: false },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -24,19 +23,7 @@ const MessageSchema = new mongoose.Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-// MessageSchema.virtual("sender", {
-//   ref: "User", // Reference the User model
-//   localField: "senderId", // Field in the current schema
-//   foreignField: "_id", // Field in the referenced schema
-//   justOne: true, // Retrieve a single object
-// });
-// MessageSchema.virtual("receiver", {
-//   ref: "User", // Reference the User model
-//   localField: "receiverId", // Field in the current schema
-//   foreignField: "_id", // Field in the referenced schema
-//   justOne: true, // Retrieve a single object
-// });
-
+// Pre hooks to exclude __v and isDeleted fields
 MessageSchema.pre("find", function (next) {
   this.select("-__v -isDeleted");
   next();
@@ -47,5 +34,10 @@ MessageSchema.pre("findOne", function (next) {
   next();
 });
 
+// Indexing to improve query performance
+MessageSchema.index({ senderId: 1, createdAt: -1 });
+MessageSchema.index({ receiverId: 1, createdAt: -1 });
+
+// Model Export
 export const Message =
   mongoose.models.Message || mongoose.model("Message", MessageSchema);

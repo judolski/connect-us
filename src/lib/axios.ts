@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthData } from "@/app/login/loginForm";
+import { AuthData } from "@/types/authData";
 import axios from "axios";
 
 const api = axios.create({
