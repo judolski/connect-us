@@ -2,63 +2,52 @@ import { statusCodes } from "@/constants/error";
 import { connectToDatabase } from "@/lib/db";
 import { ChatList } from "@/models/chatList";
 import { Message } from "@/models/message";
-import { AuthData } from "@/types/authData";
 import { ResponseBody } from "@/utils/apiResponse";
-import { verifyToken } from "@/utils/auth";
-import mongoose from "mongoose";
+import { extractUserInfoFromToken, verifyToken } from "@/utils/auth";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   connectToDatabase();
 
   try {
-    const token = req.headers.get("authorization");
-    if (!token) {
-      return NextResponse.json(ResponseBody(statusCodes.UNAUTHORIZED, null));
-    }
-    const response = await verifyToken(token);
-    if (!response.success) {
-      return NextResponse.json(
-        ResponseBody(statusCodes.UNAUTHORIZED, null, response.message)
-      );
-    }
-    const user = (response?.data as any).user;
-    const { _id } = user;
-
+    const userInfo = await extractUserInfoFromToken(req);
+    const { id } = userInfo;
+    console.log(userInfo.id);
     const chatList = await ChatList.find({
-      $or: [{ userA: _id }, { userB: _id }],
+      $or: [{ userA: id }, { userB: id }],
     })
       .populate({
         path: "userA",
         select: "-isDeleted -__v",
-        strictPopulate: false,
       })
       .populate({
         path: "userB",
         select: "-isDeleted -__v",
-        strictPopulate: false,
       })
       .populate({
-        path: "lastMessageId",
-        select: "message createdAt",
-        strictPopulate: false,
+        path: "lastMessage",
+        select: "message createdAt -__v",
       });
+
+    // console.log(chatList);
 
     // Extract only the other participant
     const formattedChatList = await Promise.all(
       chatList.map(async (chat) => {
+        // console.log(chat);
+        const { userA, userB, lastMessage } = chat;
         const participant =
-          chat.userA._id.toString() == user.id ? chat.userA : chat.userB;
+          userA.id.toString() == id.toString() ? userB : userA;
 
-        const lastMessage = chat.lastMessageId;
+        console.log(userA.id.toString() == id.toString());
 
         const unreadCount = await Message.countDocuments({
-          senderId: participant._id,
-          receiverId: _id,
+          senderId: participant.id,
+          receiverId: id,
           isRead: false,
         });
 
-        return { id: chat._id, participant, lastMessage, unreadCount };
+        return { id: chat.id, participant, lastMessage, unreadCount };
       })
     );
 

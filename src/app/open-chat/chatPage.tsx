@@ -99,7 +99,7 @@ export default function ChatPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {messages?.map(({ senderId, message }, idx) => {
+            {messages?.map(({ senderId, message, createdAt }, idx) => {
               const user: AuthData = JSON.parse(
                 localStorage.getItem("authData")!
               );
@@ -111,13 +111,16 @@ export default function ChatPage() {
                   className={`flex items-end ${
                     isMine ? "justify-end" : "justify-start"
                   }`}>
-                  <div
-                    className={`max-w-xs px-4 py-2 rounded-lg text-sm break-words ${
-                      isMine
-                        ? "bg-blue-500 text-white rounded-br-none"
-                        : "bg-gray-200 text-gray-800 rounded-bl-none"
-                    }`}>
-                    {message}
+                  <div className="flex flex-col justify-start gap-[1px]">
+                    <div
+                      className={`max-w-xs px-4 py-2 rounded-lg text-sm break-words ${
+                        isMine
+                          ? "bg-blue-500 text-white rounded-br-none"
+                          : "bg-gray-200 text-gray-800 rounded-bl-none"
+                      }`}>
+                      {message}
+                    </div>
+                    <span className="text-[11px]">{createdAt}</span>
                   </div>
                 </div>
               );

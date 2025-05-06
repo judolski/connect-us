@@ -5,7 +5,7 @@ const ChatListSchema = new mongoose.Schema(
   {
     userA: { type: Schema.Types.ObjectId, ref: "User", required: true },
     userB: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    lastMessageId: {
+    lastMessage: {
       type: Schema.Types.ObjectId,
       ref: "Message",
       required: true,

@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { jwtVerify } from "jose";
+import { NextResponse } from "next/server";
+import { ResponseBody } from "./apiResponse";
+import { statusCodes } from "@/constants/error";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
@@ -60,4 +63,19 @@ export const verifyToken = async (token: string) => {
       data: null,
     };
   }
+};
+
+export const extractUserInfoFromToken = async (req: Request) => {
+  const token = req.headers.get("authorization");
+  if (!token) {
+    return NextResponse.json(ResponseBody(statusCodes.UNAUTHORIZED, null));
+  }
+  const response = await verifyToken(token);
+  if (!response.success) {
+    return NextResponse.json(
+      ResponseBody(statusCodes.UNAUTHORIZED, null, response.message)
+    );
+  }
+  const user = (response?.data as any).user;
+  return user;
 };

@@ -5,5 +5,6 @@ export type Message = {
   receiverId?: AuthData;
   senderId?: AuthData;
   message: string;
-  timestamp?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };

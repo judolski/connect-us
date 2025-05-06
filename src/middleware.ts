@@ -9,7 +9,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = await verifyToken(token);
-  // if (response) console.log(JSON.stringify(response.data));
 
   if (response?.success) {
     const res = NextResponse.next();

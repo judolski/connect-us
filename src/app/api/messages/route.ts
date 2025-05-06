@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db";
 import { ChatList } from "@/models/chatList";
 import { Message } from "@/models/message";
 import { ResponseBody } from "@/utils/apiResponse";
+import { extractUserInfoFromToken } from "@/utils/auth";
 import mongoose from "mongoose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -19,16 +20,10 @@ const pusher = new Pusher({
 
 export async function GET(req: Request) {
   await connectToDatabase();
-  // const data = await JSON.parse(req.headers.get("x-user") as string);
-  const cookieStore = await cookies();
 
-  const userCookie = cookieStore.get("user-info"); // the cookie you set in middleware
-  if (!userCookie) {
-    return NextResponse.json(ResponseBody(statusCodes.UNAUTHORIZED));
-  }
-  const userData = JSON.parse(userCookie.value);
-  const { id } = userData.user;
   try {
+    const userInfo = await extractUserInfoFromToken(req);
+    const { id } = userInfo;
     const response: ResponseModel[] = await Message.find({
       $or: [{ senderId: id }, { receiverId: id }],
     })
@@ -55,6 +50,9 @@ export async function POST(req: Request) {
 
     const { channel, event, senderId, receiverId } = body;
 
+    console.log(senderId);
+    console.log(receiverId);
+
     const saved = await Message.create(body);
     const populatedMsg = await Message.findById(saved._id)
       .populate({ path: "senderId", select: "-isDeleted -__v" })
@@ -73,7 +71,7 @@ export async function POST(req: Request) {
         userA: new mongoose.Types.ObjectId(userA),
         userB: new mongoose.Types.ObjectId(userB),
       },
-      { $set: { userA, userB, lastMessageId: saved._id } },
+      { $set: { userA, userB, lastMessage: saved._id } },
       { upsert: true, new: true, strict: false }
     );
 
