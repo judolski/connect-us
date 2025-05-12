@@ -7,16 +7,17 @@ import Pusher from "pusher-js";
 import { AuthData } from "@/types/authData";
 import { Message } from "@/types/message";
 import { useChatStore } from "@/stores/useChatStore";
+import { formatDateTime } from "@/utils/formatters";
 
 export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
-  // const [messages, setMessages] = useState<Message[]>([]);
   const [message, setText] = useState("");
   const [receiverId, setReceiverId] = useState<string | null>(null);
   const [senderId, setsenderId] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string>("");
 
-  const { messages, setMessages, addMessage } = useChatStore();
+  const { messages, setMessages, addMessage, socketId, setSocketId } =
+    useChatStore();
 
   const router = useRouter();
 
@@ -35,18 +36,30 @@ export default function ChatPage() {
       return;
     }
 
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+      authEndpoint: "/api/pusher/auth", // Your custom auth endpoint
+    });
+
+    pusher.connection.bind("connected", () => {});
+    const socketId = pusher.connection.socket_id;
+
+    setSocketId(socketId);
+
     setReceiverId(receiver.id);
     setsenderId(sender.id);
     setReceiverName(receiver.firstName);
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    });
 
-    const channel = pusher.subscribe("my-channel");
-    channel.bind("my-event", (data: Message) => {
+    const sortedIds = [String(sender.id), String(receiver.id)].sort();
+    const channelName = `private-chat-${sortedIds[0]}-${sortedIds[1]}`;
+    const eventName = "new-message";
+    console.log(`private-chat-${sortedIds[0]}-${sortedIds[1]}`);
+
+    const channel = pusher.subscribe(channelName);
+    channel.bind(eventName, (data: Message) => {
+      console.log("Successfully subscribed to", channelName);
       addMessage(data);
     });
-
     api.get("/api/messages").then((res) => {
       if (res.data.success) {
         setMessages(res.data.data || []);
@@ -55,7 +68,7 @@ export default function ChatPage() {
 
     // Cleanup
     return () => {
-      pusher.unsubscribe("my-channel");
+      pusher.unsubscribe(channelName);
     };
   }, []);
 
@@ -63,8 +76,7 @@ export default function ChatPage() {
     const response = await api.post(
       "/api/messages",
       JSON.stringify({
-        channel: "my-channel",
-        event: "my-event",
+        socketId,
         receiverId,
         senderId,
         message,
@@ -113,14 +125,19 @@ export default function ChatPage() {
                   }`}>
                   <div className="flex flex-col justify-start gap-[1px]">
                     <div
-                      className={`max-w-xs px-4 py-2 rounded-lg text-sm break-words ${
+                      className={`max-w-xs px-4 py-2  rounded-lg text-base break-words ${
                         isMine
                           ? "bg-blue-500 text-white rounded-br-none"
                           : "bg-gray-200 text-gray-800 rounded-bl-none"
                       }`}>
                       {message}
                     </div>
-                    <span className="text-[11px]">{createdAt}</span>
+                    <span
+                      className={`${
+                        isMine ? "text-right" : "text-left"
+                      } text-[10px]`}>
+                      {formatDateTime(createdAt!)}
+                    </span>
                   </div>
                 </div>
               );

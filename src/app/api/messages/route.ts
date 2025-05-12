@@ -5,7 +5,6 @@ import { Message } from "@/models/message";
 import { ResponseBody } from "@/utils/apiResponse";
 import { extractUserInfoFromToken } from "@/utils/auth";
 import mongoose from "mongoose";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import Pusher from "pusher";
 
@@ -48,17 +47,19 @@ export async function POST(req: Request) {
       }
     });
 
-    const { channel, event, senderId, receiverId } = body;
+    const { senderId, receiverId } = body;
 
-    console.log(senderId);
-    console.log(receiverId);
+    const sortedIds = [senderId, receiverId].sort(); // sorts alphabetically
+    const channelName = `private-chat-${sortedIds[0]}-${sortedIds[1]}`;
 
     const saved = await Message.create(body);
     const populatedMsg = await Message.findById(saved._id)
       .populate({ path: "senderId", select: "-isDeleted -__v" })
       .populate({ path: "receiverId", select: "-__isDeleted -__v" });
 
-    await pusher.trigger(channel, event, populatedMsg);
+    const eventName = "new-message";
+
+    await pusher.trigger(channelName, eventName, populatedMsg);
 
     //Prevents duplicate conversations between same users.
     const [userA, userB] =
@@ -78,6 +79,12 @@ export async function POST(req: Request) {
     return NextResponse.json(ResponseBody(statusCodes.OK, populatedMsg));
   } catch (error: any) {
     console.error("Error triggering Pusher event:", error);
-    return NextResponse.json({ success: false, error: error.message });
+    return NextResponse.json(
+      ResponseBody(
+        statusCodes.INTERNAL_SERVER_ERROR,
+        null,
+        `Internal Server Error, ${error}`
+      )
+    );
   }
 }
