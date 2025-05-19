@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import LoginPage from "./(features)/login/page";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +25,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>{children}</body>
+      <body className={`antialiased`}>
+        <div className="relative h-full w-full bg-white">
+          <div
+            className="absolute inset-0 bg-[url('/images/connect-us-logo.png')] bg-repeat opacity-5"
+            aria-hidden="true"></div>
+
+          <div className="relative z-10"> {children}</div>
+        </div>
+      </body>
     </html>
   );
 }

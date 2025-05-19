@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -57,9 +58,19 @@ const ChatList = (chatListProps: ChatListProps) => {
   };
 
   return (
-    <div className="w-full relative max-w-md mx-auto bg-white shadow-lg rounded-2xl overflow-hidden">
-      <div className="p-4 border-b text-xl flex justify-between font-semibold">
-        <div className="">Chats</div>
+    <div className="bg-white w-full relative max-w-full sm:max-w-lg mx-auto shadow-lg rounded-2xl h-screen flex flex-col">
+      <div className="p-4 border-b border-gray-400 text-xl flex justify-between font-semibold">
+        <div className="flex items-center">
+          <Image
+            src="/images/connect-us-logo.png"
+            width={40}
+            height={40}
+            alt="Connect logo"
+          />
+          <span className="md:text-xl !text-[22px] text-gray-600 font-semibold">
+            Chats
+          </span>
+        </div>
         <button
           onClick={() => {
             setIsSearching(isSearching ? false : true);
@@ -100,15 +111,15 @@ const ChatList = (chatListProps: ChatListProps) => {
         </button>
       </div>
 
+      {/* Search Panel */}
       {isSearching && (
-        <div className={`border-t absolute border-gray-200 bg-blue-50 w-full`}>
-          <div
-            className={`flex border-b-gray-500 relative items-center w-full`}>
+        <div className="border-t border-gray-200 bg-blue-50 w-full">
+          <div className="flex border-b-gray-500 relative items-center w-full">
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Search User"
-              className={`flex-1 px-2 py-3 h-[50px] outline-none border-b border-gray-300`}
+              className="flex-1 px-2 py-3 h-[50px] outline-none border-b border-gray-300"
             />
             {phone.length === 11 && (
               <button className="absolute right-2" onClick={search}>
@@ -144,7 +155,8 @@ const ChatList = (chatListProps: ChatListProps) => {
         </div>
       )}
 
-      <ul className="divide-y divide-gray-200">
+      {/* Scrollable Chat List */}
+      <ul className="divide-y divide-gray-200 flex-1 overflow-y-auto">
         {chatListProps.chatLists.map((chat) => (
           <li
             onClick={() => openChat(chat.participant)}

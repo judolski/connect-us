@@ -8,6 +8,7 @@ import { AuthData } from "@/types/authData";
 import { Message } from "@/types/message";
 import { useChatStore } from "@/stores/useChatStore";
 import { formatDateTime } from "@/utils/formatters";
+import BackButton from "@/components/backButton";
 
 export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -97,13 +98,8 @@ export default function ChatPage() {
     senderId && (
       <div className="w-screen h-screen flex items-center justify-center bg-gray-100">
         <div className="flex flex-col w-full h-full md:max-w-lg md:h-[90vh] bg-white rounded-none md:rounded-lg shadow-md overflow-hidden">
-          <div className="p-4 border-b">
-            <span className="md:text-xl !text-[22px] font-semibold">
-              <i className="text-[40px]">💬</i> Connnect Us
-            </span>
-          </div>
-
           <div className="w-full border-b gap-1 flex items-center p-2 border-gray-300">
+            <BackButton url={"/chat-list"} />
             <div className="w-10 h-10 text-[18px] rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-semibold">
               {receiverName[0]}
             </div>
@@ -111,34 +107,46 @@ export default function ChatPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {messages?.map(({ senderId, message, createdAt }, idx) => {
-              const user: AuthData = JSON.parse(
-                localStorage.getItem("authData")!
-              );
-              const isMine = senderId?.id === user.id;
-
+            {messages?.map((msg) => {
               return (
-                <div
-                  key={idx}
-                  className={`flex items-end ${
-                    isMine ? "justify-end" : "justify-start"
-                  }`}>
-                  <div className="flex flex-col justify-start gap-[1px]">
-                    <div
-                      className={`max-w-xs px-4 py-2  rounded-lg text-base break-words ${
-                        isMine
-                          ? "bg-blue-500 text-white rounded-br-none"
-                          : "bg-gray-200 text-gray-800 rounded-bl-none"
-                      }`}>
-                      {message}
-                    </div>
-                    <span
-                      className={`${
-                        isMine ? "text-right" : "text-left"
-                      } text-[10px]`}>
-                      {formatDateTime(createdAt!)}
-                    </span>
+                <div key={msg.date}>
+                  <div className="text-center w-full">
+                    <span className="w-fit p-1 rounded-full text-sm bg-blue-100">
+                      {msg.date}
+                    </span>{" "}
                   </div>
+
+                  {msg.chats?.map(({ senderId, createdAt, message }, idx) => {
+                    const user: AuthData = JSON.parse(
+                      localStorage.getItem("authData")!
+                    );
+                    const isMine = senderId?.id === user.id;
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-end my-2 ${
+                          isMine ? "justify-end" : "justify-start"
+                        }`}>
+                        <div className="flex flex-col justify-start gap-[1px]">
+                          <div
+                            className={`max-w-xs px-4 py-2  rounded-lg text-base break-words ${
+                              isMine
+                                ? "bg-blue-500 text-white rounded-br-none"
+                                : "bg-gray-200 text-gray-800 rounded-bl-none"
+                            }`}>
+                            {message}
+                          </div>
+                          <span
+                            className={`${
+                              isMine ? "text-right" : "text-left"
+                            } text-[10px]`}>
+                            {formatDateTime(createdAt!)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}

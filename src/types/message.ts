@@ -8,3 +8,8 @@ export type Message = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type GroupedMessage = {
+  date: string;
+  chats: Message[];
+};
