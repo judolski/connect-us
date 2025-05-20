@@ -42,10 +42,10 @@ export default function ChatPage() {
       authEndpoint: "/api/pusher/auth", // Your custom auth endpoint
     });
 
-    pusher.connection.bind("connected", () => {});
-    const socketId = pusher.connection.socket_id;
-
-    setSocketId(socketId);
+    pusher.connection.bind("connected", () => {
+      const socket_Id = pusher.connection.socket_id;
+      setSocketId(socket_Id);
+    });
 
     setReceiverId(receiver.id);
     setsenderId(sender.id);
@@ -54,18 +54,20 @@ export default function ChatPage() {
     const sortedIds = [String(sender.id), String(receiver.id)].sort();
     const channelName = `private-chat-${sortedIds[0]}-${sortedIds[1]}`;
     const eventName = "new-message";
-    console.log(`private-chat-${sortedIds[0]}-${sortedIds[1]}`);
+    // console.log(`private-chat-${sortedIds[0]}-${sortedIds[1]}`);
 
     const channel = pusher.subscribe(channelName);
     channel.bind(eventName, (data: Message) => {
-      console.log("Successfully subscribed to", channelName);
       addMessage(data);
     });
-    api.get("/api/messages").then((res) => {
-      if (res.data.success) {
-        setMessages(res.data.data || []);
-      } else alert(res.data.message);
-    });
+
+    api
+      .get("/api/messages", { params: { receiverId: receiver.id } })
+      .then((res) => {
+        if (res.data.success) {
+          setMessages(res.data.data || []);
+        } else alert(res.data.message);
+      });
 
     // Cleanup
     return () => {
@@ -86,7 +88,7 @@ export default function ChatPage() {
 
     const data = await response.data;
     if (data.success) {
-      setMessages([...messages, data.data]);
+      addMessage(data.data);
       setText("");
       console.log("Message sent!");
     } else {

@@ -66,8 +66,7 @@ export const authenticateUser = async (username: string, password: string) => {
     }
     return ResponseBody(statusCodes.OK, checkUser);
   } catch (error) {
-    console.log(error);
     const message = error instanceof Error ? error.message : error;
-    return ResponseBody(statusCodes.OK, null, message);
+    return ResponseBody(statusCodes.INTERNAL_SERVER_ERROR, null, message);
   }
 };

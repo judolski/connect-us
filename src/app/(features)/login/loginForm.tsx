@@ -13,21 +13,35 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     setIsClent(true);
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await api.post("/api/login", { password, username });
+    setLoading(true);
+    try {
+      const res = await api.post("/api/login", { password, username });
 
-    const data = res.data;
-    if (data.success) {
-      const authData: AuthData = data.data;
-      localStorage.setItem("authData", JSON.stringify(authData));
-      router.push("/chat-list");
-    } else {
-      alert(`Login failed: ${data.message}`);
+      const data = res.data;
+      if (data.success) {
+        const authData: AuthData = data.data;
+        localStorage.setItem("authData", JSON.stringify(authData));
+        router.push("/chat-list");
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      console.log(err);
+
+      const message = (err as Record<string, any>).response.data.message;
+
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,9 +90,15 @@ export default function LoginForm() {
 
         <button
           type="submit"
-          className="w-full bg-[#3257A9] text-white py-2 px-4 rounded-md hover:bg-[#304ea9]">
-          Login
+          className="w-full bg-[#3257A9] text-white py-2 px-4 rounded-md cursor-pointer hover:bg-[#304ea9]">
+          {loading ? "Logging in..." : "Login"}
         </button>
+
+        {error !== null && (
+          <p className="text-red-600 bg-red-100 rounded-sm p-1 text-sm mt-1">
+            ❌ {error}
+          </p>
+        )}
       </form>
     )
   );

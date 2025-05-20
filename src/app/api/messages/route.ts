@@ -19,12 +19,17 @@ const pusher = new Pusher({
 
 export async function GET(req: Request) {
   await connectToDatabase();
-
+  const { searchParams } = new URL(req.url);
+  const userB = searchParams.get("receiverId");
   try {
     const userInfo = await extractUserInfoFromToken(req);
     const { id } = userInfo;
+    const UserA = id;
     const response: ResponseModel[] = await Message.find({
-      $or: [{ senderId: id }, { receiverId: id }],
+      $or: [
+        { senderId: UserA, receiverId: userB },
+        { senderId: userB, receiverId: UserA },
+      ],
     })
       .sort({ createdAt: 1 })
       .populate({ path: "senderId", select: "-isDeleted -__v -password" })
@@ -47,7 +52,7 @@ export async function POST(req: Request) {
       }
     });
 
-    const { senderId, receiverId } = body;
+    const { senderId, receiverId, socketId } = body;
 
     const sortedIds = [senderId, receiverId].sort(); // sorts alphabetically
     const channelName = `private-chat-${sortedIds[0]}-${sortedIds[1]}`;
@@ -58,8 +63,9 @@ export async function POST(req: Request) {
       .populate({ path: "receiverId", select: "-__isDeleted -__v" });
 
     const eventName = "new-message";
-
-    await pusher.trigger(channelName, eventName, populatedMsg);
+    await pusher.trigger(channelName, eventName, populatedMsg, {
+      socket_id: socketId,
+    });
 
     //Prevents duplicate conversations between same users.
     const [userA, userB] =

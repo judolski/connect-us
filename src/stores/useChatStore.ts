@@ -11,63 +11,78 @@ interface ChatState {
   setSocketId: (socketId: string) => void;
 }
 
+const DATE_FORMAT = "d, MMMM, yyyy";
+
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   setMessages: (msgs) => {
     const groupMgs = groupMessages(msgs);
-    console.log(groupMgs);
 
     set({ messages: groupMgs });
   },
   addMessage: (msg: Message) => {
     set((state) => {
       if (!msg.createdAt) return { messages: [...state.messages] };
-      const dateKey = format(new Date(msg.createdAt), "MMMM d"); // e.g. "May 19"
+
+      const dateKey = format(new Date(msg.createdAt), DATE_FORMAT);
       const existingGroup = state.messages.find(
         (group) => group.date === dateKey
       );
 
       if (existingGroup) {
-        // Add to existing group
+        const updatedMessages = state.messages.map((group) =>
+          group.date === dateKey
+            ? {
+                ...group,
+                chats: Array.isArray(group.chats)
+                  ? [...group.chats, msg]
+                  : [msg],
+              }
+            : group
+        );
         return {
-          messages: state.messages.map((group) =>
-            group.date === dateKey
-              ? {
-                  ...group,
-                  chats: [...(group.chats || []), msg], // ✅ Make sure it's typed
-                }
-              : group
-          ),
+          messages: updatedMessages,
         };
       } else {
-        // Create new group
+        const newMessages = [
+          ...state.messages,
+          { date: dateKey, chats: [msg] },
+        ];
         return {
-          messages: [...state.messages, { date: dateKey, chats: [msg] }],
+          messages: newMessages,
         };
       }
     });
   },
-
   socketId: "",
   setSocketId: (socketId) => set({ socketId }),
 }));
 
 const groupMessages = (messages: Message[]) => {
-  const groupedMsgs = messages.reduce((groups: any, chat: Message) => {
-    if (!chat.createdAt) return groups;
-    const dateKey = format(new Date(chat.createdAt), "d, MMMM, yyyy");
+  const groupedMsgs: GroupedMessage = messages.reduce(
+    (groups: any, chat: Message) => {
+      if (!chat.createdAt) return groups;
+      const dateKey = format(new Date(chat.createdAt), DATE_FORMAT);
 
-    if (!groups[dateKey]) {
-      groups[dateKey] = [];
-    }
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
 
-    groups[dateKey].push(chat);
+      groups[dateKey].push(chat);
 
-    return groups;
-  }, {} as Record<string, any>);
+      return groups;
+    },
+    {} as Record<string, Message[]>
+  );
 
-  return Object.entries(groupedMsgs).map(([date, chats]) => ({
-    date,
-    chats,
-  })) as GroupedMessage[];
+  return Object.entries(groupedMsgs)
+    .map(([date, chats]) => ({
+      date,
+      chats,
+    }))
+    .sort(
+      (a, b) =>
+        new Date((a.chats[0] as Message | any).createdAt).getTime() -
+        new Date((b.chats[0] as Message | any).createdAt).getTime()
+    ) as GroupedMessage[];
 };

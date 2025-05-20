@@ -98,7 +98,7 @@ export default function UserForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#3257A9] text-white py-2 px-4 rounded-md hover:bg-[#304ea9]">
+          className="w-full bg-[#3257A9] text-white py-2 px-4 rounded-md cursor-pointer hover:bg-[#304ea9]">
           {loading ? "Submitting..." : "Create Account"}
         </button>
 
