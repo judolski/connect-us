@@ -1,0 +1,20 @@
+{
+  "name": "ConnectUs",
+  "short_name": "PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#317EFB",
+  "icons": [
+    {
+      "src": "/images/connect-us-logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/connect-us-logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
