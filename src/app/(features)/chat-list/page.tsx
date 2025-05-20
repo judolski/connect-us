@@ -33,7 +33,7 @@ const ChatPage = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-4">
+    <div className="min-h-screen  flex justify-center w-full my-0 sm:my-4">
       <ChatList chatLists={chatLists} />
     </div>
   );

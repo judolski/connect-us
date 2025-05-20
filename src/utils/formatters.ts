@@ -9,5 +9,5 @@ export function formatDateTime(input: string | Date): string {
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12 || 12;
 
-  return `${day} ${month}, ${year} AT ${hours}:${minutes}${ampm}`;
+  return `${hours}:${minutes}${ampm}`;
 }
