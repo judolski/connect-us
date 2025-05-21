@@ -66,7 +66,6 @@ export async function POST(req: Request) {
     await pusher.trigger(channelName, eventName, populatedMsg, {
       socket_id: socketId,
     });
-
     //Prevents duplicate conversations between same users.
     const [userA, userB] =
       senderId.toString() < receiverId.toString()

@@ -170,14 +170,16 @@ const ChatList = (chatListProps: ChatListProps) => {
                 <div className="font-semibold">
                   {chat.participant.firstName} {chat.participant.lastName}
                 </div>
-                <div className="text-[11px] text-gray-500">
+                <div className="text-[11px] text-gray-500 truncate overflow-hidden whitespace-nowrap max-w-[220px] sm:max-w-[350px]">
                   {chat.lastMessage.message}
                 </div>
               </div>
             </div>
-            <div className="bg-indigo-500 py-1 px-2 text-white flex items-center rounded-full">
-              {chat.unreadCount}
-            </div>
+            {chat.unreadCount > 0 && (
+              <div className="bg-indigo-500 truncate min-w-6 min-h-6 pb-[1px] font-medium text-white flex justify-center items-center rounded-full">
+                {chat.unreadCount}
+              </div>
+            )}
           </li>
         ))}
       </ul>

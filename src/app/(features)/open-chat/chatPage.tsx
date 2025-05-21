@@ -9,6 +9,8 @@ import { Message } from "@/types/message";
 import { useChatStore } from "@/stores/useChatStore";
 import { formatDateTime } from "@/utils/formatters";
 import BackButton from "@/components/backButton";
+import { CheckCircle, CircleCheck } from "lucide-react";
+import { group } from "console";
 
 export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -17,8 +19,14 @@ export default function ChatPage() {
   const [senderId, setsenderId] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string>("");
 
-  const { messages, setMessages, addMessage, socketId, setSocketId } =
-    useChatStore();
+  const {
+    messages,
+    setMessages,
+    addMessage,
+    updateReadStatus,
+    socketId,
+    setSocketId,
+  } = useChatStore();
 
   const router = useRouter();
 
@@ -31,6 +39,10 @@ export default function ChatPage() {
     const receiver: AuthData = JSON.parse(
       localStorage.getItem("receiverData")!
     );
+
+    setReceiverId(receiver.id);
+    setsenderId(sender.id);
+    setReceiverName(receiver.firstName);
 
     if (!receiver || !sender) {
       router.push("/chat-list");
@@ -47,18 +59,33 @@ export default function ChatPage() {
       setSocketId(socket_Id);
     });
 
-    setReceiverId(receiver.id);
-    setsenderId(sender.id);
-    setReceiverName(receiver.firstName);
-
     const sortedIds = [String(sender.id), String(receiver.id)].sort();
     const channelName = `private-chat-${sortedIds[0]}-${sortedIds[1]}`;
-    const eventName = "new-message";
     // console.log(`private-chat-${sortedIds[0]}-${sortedIds[1]}`);
 
     const channel = pusher.subscribe(channelName);
-    channel.bind(eventName, (data: Message) => {
+    channel.bind("new-message", (data: Message) => {
       addMessage(data);
+
+      readMessages([data.id], data.senderId?.id, data.receiverId?.id, socketId);
+    });
+
+    const readMessages = (
+      messageIds: string[],
+      senderId: string,
+      receiverId: string,
+      socketId: string
+    ) => {
+      api.post("/api/messages/read-message", {
+        messageIds: messageIds,
+        senderId: senderId,
+        receiverId: receiverId,
+        socketId: socketId,
+      });
+    };
+
+    channel.bind("message-read", (messageIds: string[]) => {
+      updateReadStatus(messageIds);
     });
 
     api
@@ -66,6 +93,15 @@ export default function ChatPage() {
       .then((res) => {
         if (res.data.success) {
           setMessages(res.data.data || []);
+          const unreadMsgIds = res.data.data
+            .filter(
+              (message: Message) =>
+                !message.isRead && receiver.id === message.senderId.id
+            )
+            .map((message: Message) => message.id);
+          if (unreadMsgIds.length > 0) {
+            readMessages(unreadMsgIds, sender.id, receiver.id, socketId);
+          }
         } else alert(res.data.message);
       });
 
@@ -113,42 +149,52 @@ export default function ChatPage() {
               return (
                 <div key={msg.date}>
                   <div className="text-center w-full">
-                    <span className="w-fit p-1 rounded-full text-sm bg-blue-100">
+                    <span className="w-fit py-1 px-2 rounded-full text-sm bg-blue-100">
                       {msg.date}
                     </span>{" "}
                   </div>
 
-                  {msg.chats?.map(({ senderId, createdAt, message }, idx) => {
-                    const user: AuthData = JSON.parse(
-                      localStorage.getItem("authData")!
-                    );
-                    const isMine = senderId?.id === user.id;
+                  {msg.chats?.map(
+                    ({ senderId, createdAt, message, isRead }, idx) => {
+                      const user: AuthData = JSON.parse(
+                        localStorage.getItem("authData")!
+                      );
+                      const isMine = senderId?.id === user.id;
 
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-end my-2 ${
-                          isMine ? "justify-end" : "justify-start"
-                        }`}>
-                        <div className="flex flex-col justify-start gap-[1px]">
-                          <div
-                            className={`max-w-xs px-4 py-2  rounded-lg text-base break-words ${
-                              isMine
-                                ? "bg-blue-500 text-white rounded-br-none"
-                                : "bg-gray-200 text-gray-800 rounded-bl-none"
-                            }`}>
-                            {message}
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex w-full items-end my-2 ${
+                            isMine ? "justify-end" : "justify-start"
+                          }`}>
+                          <div className="flex flex-col justify-start">
+                            <div
+                              className={`max-w-sm px-2 py-1 flex flex-col rounded-lg text-base break-words ${
+                                isMine
+                                  ? "bg-blue-500 text-white rounded-br-none ml-8"
+                                  : "bg-gray-200 text-gray-800 rounded-bl-none mr-8"
+                              }`}>
+                              {message}
+                              <span
+                                className={`${
+                                  isMine ? "text-right" : "text-left"
+                                } text-[10px]`}>
+                                {formatDateTime(createdAt!)}
+                              </span>
+                            </div>
+                            <div className="flex justify-end items-center">
+                              {isMine && (
+                                <CheckCircle
+                                  color={!isRead ? "grey" : "#90EE90"}
+                                  width={15}
+                                />
+                              )}
+                            </div>
                           </div>
-                          <span
-                            className={`${
-                              isMine ? "text-right" : "text-left"
-                            } text-[10px]`}>
-                            {formatDateTime(createdAt!)}
-                          </span>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               );
             })}

@@ -9,12 +9,12 @@
     {
       "src": "/images/connect-us-logo.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "100x100"
     },
     {
       "src": "/images/connect-us-logo.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "100x100"
     }
   ]
 }
