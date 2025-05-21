@@ -1,12 +1,14 @@
 import { AuthData } from "./authData";
 
 export type Message = {
-  _id?: string;
-  receiverId?: AuthData;
-  senderId?: AuthData;
+  _id: string;
+  id: string;
+  receiverId: AuthData;
+  senderId: AuthData;
   message: string;
-  createdAt?: string;
-  updatedAt?: string;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type GroupedMessage = {

@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ContactUs",
   description: "Chat app",
-  themeColor: "#317EFB",
   icons: {
     icon: "/images/connect-us-logo.png",
     apple: "/images/connect-us-logo.png",

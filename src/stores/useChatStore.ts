@@ -1,4 +1,5 @@
 import { GroupedMessage, Message } from "@/types/message";
+import { group } from "console";
 import { format } from "date-fns";
 import { create } from "zustand";
 
@@ -6,12 +7,13 @@ interface ChatState {
   messages: GroupedMessage[];
   setMessages: (msgs: Message[]) => void;
   addMessage: (msg: Message) => void;
+  updateReadStatus: (messageIds: string[]) => void;
 
   socketId: string;
   setSocketId: (socketId: string) => void;
 }
 
-const DATE_FORMAT = "d, MMMM, yyyy";
+const DATE_FORMAT = "d MMMM, yyyy";
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
@@ -52,6 +54,19 @@ export const useChatStore = create<ChatState>((set) => ({
           messages: newMessages,
         };
       }
+    });
+  },
+  updateReadStatus: (messageIds: string[]) => {
+    set((state) => {
+      if (messageIds.length === 0) return { messages: state.messages };
+
+      const updatedMessages = state.messages.map((group) => ({
+        ...group,
+        chats: group.chats.map((chat) =>
+          messageIds.includes(chat.id) ? { ...chat, isRead: true } : chat
+        ),
+      }));
+      return { messages: updatedMessages };
     });
   },
   socketId: "",
