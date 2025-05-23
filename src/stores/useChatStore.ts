@@ -37,8 +37,12 @@ export const useChatStore = create<ChatState>((set) => ({
             ? {
                 ...group,
                 chats: Array.isArray(group.chats)
-                  ? [...group.chats, msg]
-                  : [msg],
+                  ? msg.id === ""
+                    ? [...group.chats, msg]
+                    : [...group.chats, msg].filter((a) => a.id !== "")
+                  : msg.id === ""
+                  ? [msg]
+                  : [msg].filter((a) => a.id !== ""),
               }
             : group
         );
@@ -48,7 +52,10 @@ export const useChatStore = create<ChatState>((set) => ({
       } else {
         const newMessages = [
           ...state.messages,
-          { date: dateKey, chats: [msg] },
+          {
+            date: dateKey,
+            chats: msg.id === "" ? [msg] : [msg].filter((a) => a.id !== ""),
+          },
         ];
         return {
           messages: newMessages,

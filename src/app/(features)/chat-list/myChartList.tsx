@@ -1,31 +1,13 @@
 import api from "@/lib/axios";
+import { IChatList } from "@/types/message";
+import { IUser } from "@/types/user";
+import { formatDateTime2 } from "@/utils/formatters";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-interface ILastMessage {
-  _id: string;
-  message: string;
-  createdAt: string;
-}
-
-export interface IChatList {
-  id: string;
-  participant: IUser;
-  lastMessage: ILastMessage;
-  unreadCount: number;
-}
-
 interface ChatListProps {
   chatLists: IChatList[];
-}
-interface IUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  status: string;
 }
 
 const ChatList = (chatListProps: ChatListProps) => {
@@ -167,9 +149,15 @@ const ChatList = (chatListProps: ChatListProps) => {
                 {chat.participant.firstName[0].toUpperCase()}
               </div>
               <div className="flex flex-col gap-1">
-                <div className="font-semibold">
-                  {chat.participant.firstName} {chat.participant.lastName}
+                <div className="flex gap-1 justify-between items-center">
+                  <div className="font-semibold">
+                    {chat.participant.firstName} {chat.participant.lastName}
+                  </div>
+                  <span className="text-[10px]">
+                    {formatDateTime2(chat.lastMessage.createdAt)}
+                  </span>
                 </div>
+
                 <div className="text-[11px] text-gray-500 truncate overflow-hidden whitespace-nowrap max-w-[220px] sm:max-w-[350px]">
                   {chat.lastMessage.message}
                 </div>
