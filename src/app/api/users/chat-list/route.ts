@@ -28,8 +28,6 @@ export async function GET(req: Request) {
         select: "message isRead createdAt -__v",
       });
 
-    console.log(chatList);
-
     const formattedChatList = await Promise.all(
       chatList.map(async (chat) => {
         const { userA, userB, lastMessage } = chat;

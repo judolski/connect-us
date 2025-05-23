@@ -9,8 +9,7 @@ import { Message } from "@/types/message";
 import { useChatStore } from "@/stores/useChatStore";
 import { formatDateTime } from "@/utils/formatters";
 import BackButton from "@/components/backButton";
-import { CheckCircle, CircleCheck } from "lucide-react";
-import { group } from "console";
+import { CheckCircle, Circle, XCircle } from "lucide-react";
 
 export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -107,11 +106,28 @@ export default function ChatPage() {
 
     // Cleanup
     return () => {
-      pusher.unsubscribe(channelName);
+      channel.unbind_all();
+      channel.unsubscribe();
+      pusher.disconnect();
     };
   }, []);
 
   const sendMessage = async () => {
+    const tempChart = {
+      createdAt: new Date().toISOString(),
+      id: "",
+      isRead: false,
+      message: message,
+      receiverId: { _id: receiverId, id: receiverId },
+      senderId: { _id: senderId, id: senderId },
+      _id: "",
+    };
+
+    if (message.trim() === "") return;
+
+    addMessage(tempChart as any);
+    setText("");
+
     const response = await api.post(
       "/api/messages",
       JSON.stringify({
@@ -125,10 +141,8 @@ export default function ChatPage() {
     const data = await response.data;
     if (data.success) {
       addMessage(data.data);
-      setText("");
-      console.log("Message sent!");
     } else {
-      console.log("Error sending message");
+      addMessage({ ...tempChart, id: "failed" } as any);
     }
   };
 
@@ -155,7 +169,7 @@ export default function ChatPage() {
                   </div>
 
                   {msg.chats?.map(
-                    ({ senderId, createdAt, message, isRead }, idx) => {
+                    ({ senderId, createdAt, message, isRead, id }, idx) => {
                       const user: AuthData = JSON.parse(
                         localStorage.getItem("authData")!
                       );
@@ -182,14 +196,25 @@ export default function ChatPage() {
                                 {formatDateTime(createdAt!)}
                               </span>
                             </div>
-                            <div className="flex justify-end items-center">
-                              {isMine && (
-                                <CheckCircle
-                                  color={!isRead ? "grey" : "#90EE90"}
-                                  width={15}
-                                />
-                              )}
-                            </div>
+
+                            {isMine && (
+                              <div className="flex justify-end items-center">
+                                {id ? (
+                                  <>
+                                    {id === "failed" ? (
+                                      <XCircle color={"red"} width={15} />
+                                    ) : (
+                                      <CheckCircle
+                                        color={!isRead ? "grey" : "#90EE90"}
+                                        width={15}
+                                      />
+                                    )}
+                                  </>
+                                ) : (
+                                  <Circle color={"grey"} width={15} />
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

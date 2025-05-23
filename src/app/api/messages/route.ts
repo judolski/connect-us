@@ -72,14 +72,38 @@ export async function POST(req: Request) {
         ? [senderId, receiverId]
         : [receiverId, senderId];
 
-    await ChatList.findOneAndUpdate(
+    const chat = await ChatList.findOneAndUpdate(
       {
         userA: new mongoose.Types.ObjectId(userA),
         userB: new mongoose.Types.ObjectId(userB),
       },
       { $set: { userA, userB, lastMessage: saved._id } },
       { upsert: true, new: true, strict: false }
-    );
+    )
+      .populate({
+        path: "userA",
+        select: "-isDeleted -__v",
+      })
+      .populate({
+        path: "userB",
+        select: "-isDeleted -__v",
+      })
+      .populate({
+        path: "lastMessage",
+        select: "message isRead createdAt -__v",
+      });
+
+    const formattedChat = {
+      id: chat.id,
+      participant: populatedMsg.senderId,
+      lastMessage: chat.lastMessage,
+      unreadCount: 1,
+    };
+
+    const chatListChannelName = `private-chat-${receiverId.toString()}`;
+    await pusher.trigger(chatListChannelName, "chat-list", formattedChat, {
+      socket_id: socketId,
+    });
 
     return NextResponse.json(ResponseBody(statusCodes.OK, populatedMsg));
   } catch (error: any) {
