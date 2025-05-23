@@ -30,7 +30,7 @@ export default function ChatPage() {
   const router = useRouter();
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
   }, [messages]);
 
   useEffect(() => {
@@ -148,7 +148,7 @@ export default function ChatPage() {
 
   return (
     senderId && (
-      <div className="w-screen h-screen flex items-center justify-center bg-gray-100">
+      <div className="w-full h-screen flex items-center justify-center ">
         <div className="flex flex-col w-full h-full md:max-w-lg md:h-[90vh] bg-white rounded-none md:rounded-lg shadow-md overflow-hidden">
           <div className="w-full border-b gap-1 flex items-center p-2 border-gray-300">
             <BackButton url={"/chat-list"} />
@@ -158,7 +158,7 @@ export default function ChatPage() {
             <div className="font-semibold text-[18px]">{receiverName}</div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 flex flex-col">
             {messages?.map((msg) => {
               return (
                 <div key={msg.date}>
