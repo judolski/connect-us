@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import InstallPrompt from "@/components/appDownloadPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,9 @@ export default function RootLayout({
           <div
             className="absolute inset-0 bg-[url('/images/connect-us-logo.png')] bg-repeat opacity-5"
             aria-hidden="true"></div>
-
+          <div>
+            <InstallPrompt />
+          </div>
           <div className="relative z-10"> {children}</div>
         </div>
       </body>
