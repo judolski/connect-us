@@ -40,7 +40,7 @@ const ChatList = (chatListProps: ChatListProps) => {
   };
 
   return (
-    <div className="bg-white w-full relative max-w-full sm:max-w-lg mx-auto shadow-lg rounded-2xl h-screen flex flex-col">
+    <div className="bg-white w-full relative max-w-full sm:max-w-lg mx-auto shadow-lg  h-screen flex flex-col">
       <div className="p-4 border-b border-gray-400 text-xl flex justify-between font-semibold">
         <div className="flex items-center">
           <Image

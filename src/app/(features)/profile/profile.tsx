@@ -5,6 +5,7 @@ import { Phone, Mail, User2, Pencil } from "lucide-react";
 import api from "@/lib/axios";
 import { IUser } from "@/types/user";
 import BackButton from "@/components/backButton";
+import Navigate from "@/components/backButton";
 
 function getInitials(firstName: string, lastName: string) {
   return (
@@ -61,16 +62,14 @@ const UserProfile = () => {
       }
     });
   };
-
+  // Make only the content scrollable instead of the whole page
+  // Add a max height and overflow to the content container
   return (
     mounted && (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-white flex items-center justify-center">
-        <div className="w-full flex flex-col my-0 sm:my-4 space-y-6 items-center sm:max-w-md h-screen sm:h-auto p-6 bg-white shadow-lg rounded-md">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-white flex items-center justify-center overflow-hidden">
+        <div className="w-full flex flex-col my-0 sm:my-4 space-y-6 items-center sm:max-w-lg min-h-screen sm:m-h-auto p-6 bg-white shadow-lg rounded-md">
           {/* Avatar */}
           <div className="flex flex-col w-full items-center mb-6">
-            <div className="flex justify-start w-full">
-              <BackButton url={"/chat-list"} />
-            </div>
             <div className="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-blue-400 border-4 border-white shadow-lg flex items-center justify-center text-5xl text-white font-bold mb-3 select-none">
               {getInitials(profileName.firstName, profileName.lastName)}
             </div>

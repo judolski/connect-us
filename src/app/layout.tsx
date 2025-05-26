@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import InstallPrompt from "@/components/appDownloadPrompt";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +39,13 @@ export default function RootLayout({
           <div>
             <InstallPrompt />
           </div>
-          <div className="relative z-10"> {children}</div>
+
+          <div className="">
+            <div className="relative z-10 mb-18 sm:mb-16">{children}</div>
+            <div className="fixed bottom-0 left-0 w-full z-20">
+              <BottomNavigation />
+            </div>
+          </div>
         </div>
       </body>
     </html>
