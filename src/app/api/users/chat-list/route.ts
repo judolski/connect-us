@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/lib/db";
 import { ChatList } from "@/models/chatList";
 import { Message } from "@/models/message";
 import { ResponseBody } from "@/utils/apiResponse";
-import { extractUserInfoFromToken, verifyToken } from "@/utils/auth";
+import { extractUserInfoFromToken } from "@/utils/auth";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {

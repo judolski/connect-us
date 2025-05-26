@@ -34,23 +34,24 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    const sender: AuthData = JSON.parse(localStorage.getItem("authData")!);
-    const receiver: AuthData = JSON.parse(
-      localStorage.getItem("receiverData")!
-    );
+    const senderRaw = localStorage.getItem("authData");
+    const receiverRaw = localStorage.getItem("receiverData");
+
+    if (!senderRaw || !receiverRaw) {
+      router.push("/chat-list");
+      return;
+    }
+
+    const sender: AuthData = JSON.parse(senderRaw);
+    const receiver: AuthData = JSON.parse(receiverRaw);
 
     setReceiverId(receiver.id);
     setsenderId(sender.id);
     setReceiverName(receiver.firstName);
 
-    if (!receiver || !sender) {
-      router.push("/chat-list");
-      return;
-    }
-
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-      authEndpoint: "/api/pusher/auth", // Your custom auth endpoint
+      authEndpoint: "/api/pusher/auth",
     });
 
     pusher.connection.bind("connected", () => {

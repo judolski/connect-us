@@ -5,4 +5,5 @@ export type IUser = {
   email: string;
   phoneNumber: string;
   status: string;
+  createdAt: string;
 };
