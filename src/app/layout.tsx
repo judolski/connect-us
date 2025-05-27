@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import InstallPrompt from "@/components/appDownloadPrompt";
 import BottomNavigation from "@/components/BottomNavigation";
+import ClientLayout from "@/components/myLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,19 +32,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>
-        <div className="relative h-full w-full bg-white">
+      <body className="antialiased">
+        <div className="relative w-full min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-white">
+          {/* Fixed background image */}
           <div
-            className="absolute inset-0 bg-[url('/images/connect-us-logo.png')] bg-repeat opacity-5"
+            className="fixed inset-0 bg-[url('/images/connect-us-logo.png')] bg-repeat opacity-4 z-0"
             aria-hidden="true"></div>
-          <div>
-            <InstallPrompt />
-          </div>
 
-          <div className="">
-            <div className="relative z-10 mb-18 sm:mb-16">{children}</div>
-            <div className="fixed bottom-0 left-0 w-full z-20">
-              <BottomNavigation />
+          <InstallPrompt />
+
+          <div className="w-full  relative z-10">
+            <div className="flex items-start justify-center overflow-y-auto ">
+              <div className="relative bg-white z-10 sm:max-w-lg sm:mt-4 w-full">
+                <ClientLayout>{children}</ClientLayout>
+              </div>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { AuthData } from "@/types/authData";
 import Link from "next/link";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -16,9 +17,12 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { setAuth, clearAuth } = useAuthStore();
+
   useEffect(() => {
     setIsClent(true);
-  });
+    clearAuth();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +33,8 @@ export default function LoginForm() {
       const data = res.data;
       if (data.success) {
         const authData: AuthData = data.data;
-        localStorage.setItem("authData", JSON.stringify(authData));
+        // localStorage.setItem("authData", JSON.stringify(authData));
+        setAuth(authData);
         router.push("/chat-list");
       } else {
         setError(data.message);

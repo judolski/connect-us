@@ -40,16 +40,16 @@ const ChatList = (chatListProps: ChatListProps) => {
   };
 
   return (
-    <div className="bg-white w-full relative max-w-full sm:max-w-lg mx-auto shadow-lg  h-screen flex flex-col">
-      <div className="p-4 border-b border-gray-400 text-xl flex justify-between font-semibold">
+    <div className="flex flex-col w-full h-[98vh] sm:h-[90vh] rounded-none md:rounded-lg shadow-md overflow-hidden">
+      <div className="w-full border-b gap-1 p-4 flex items-center justify-between border-gray-300">
         <div className="flex items-center">
-          <Image
+          {/* <Image
             src="/images/connect-us-logo.png"
             width={40}
             height={40}
             alt="Connect logo"
-          />
-          <span className="md:text-xl !text-[22px] text-gray-600 font-semibold">
+          /> */}
+          <span className="md:text-xl !text-[22px] text-gray-600 font-bold">
             Chats
           </span>
         </div>
