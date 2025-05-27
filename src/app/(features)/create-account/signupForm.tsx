@@ -69,7 +69,9 @@ export default function UserForm() {
 
   return (
     isClient && (
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 overflow-y-auto w-full">
         {[
           { label: "First Name", name: "firstName", type: "text" },
           { label: "Last Name", name: "lastName", type: "text" },

@@ -87,13 +87,7 @@ const ChatPage = () => {
     }
   };
 
-  return loading ? (
-    <Loader />
-  ) : (
-    <div className="min-h-screen  flex justify-center w-full my-0 sm:my-4">
-      <ChatList chatLists={chatLists} />
-    </div>
-  );
+  return loading ? <Loader type="line" /> : <ChatList chatLists={chatLists} />;
 };
 
 export default ChatPage;
